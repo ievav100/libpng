@@ -1,0 +1,33 @@
+# Copyright (C) 2025 Cosmin Truta
+# SPDX-License-Identifier: MIT-0
+
+name: Verify libpng UBSan on the fork
+
+on:
+  push:
+    branches:
+      - codex/verify-ubsan-linux
+
+permissions:
+  contents: read
+
+jobs:
+  verify-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential zlib1g-dev
+      - name: Check out the code
+        uses: actions/checkout@v4
+        with:
+          ref: d96a1c30a81cc9bb50c3d487c722c8f3286aaf56
+          persist-credentials: false
+      - name: Run the configure verification script
+        run: bash ./ci/ci_verify_configure.sh
+        env:
+          CI_MAKE_FLAGS: -j2
+          CI_SANITIZERS: address,undefined
+          UBSAN_OPTIONS: halt_on_error=1
